@@ -72,9 +72,9 @@ const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    if (!user.isVerified) {
-      return res.status(400).json({ message: "Please verify your email first" });
-    }
+    // if (!user.isVerified) {
+    //   return res.status(400).json({ message: "Please verify your email first" });
+    // }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {

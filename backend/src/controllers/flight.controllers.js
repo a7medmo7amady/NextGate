@@ -1,5 +1,5 @@
 const Flight = require("../models/flight");
-s
+
 const getAllFlights = async (req, res) => {
   try {
     const flights = await Flight.find();
