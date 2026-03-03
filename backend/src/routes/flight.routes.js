@@ -5,7 +5,7 @@ const {
   updateFlight,
   deleteFlight,
   searchFlights,
-} = require("../controllers/flight.controller");
+} = require("../controllers/flight.controllers");
 
 const router = express.Router();
 
