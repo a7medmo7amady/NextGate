@@ -1,14 +1,16 @@
 const mongoose = require("mongoose")
 
 const flightSchema = new mongoose.Schema({
-    flightNumber : {type:string, require:true, unique:true },
-    from : {type: string},
-    to : {type: string},
-    date : {type: date},
-    price : {type: int},
-    AvailableSeats: {type: int},
-    seats:{type:int},
+    flightNumber : {type:String, required:true, unique:true },
+    from : {type: String , required:true},
+    to : {type: String, required:true},
+    date : {type: Date, required:true},
+    price : {type: Number, required:true},
+    AvailableSeats: {type: Number, required:true},
+    seats:{type:Number,  required:true},},{
+        timestamps: true
+    
 });
 const Flight = mongoose.model("Flight", flightSchema)
 
-model.export = Flight
+module.exports = Flight
