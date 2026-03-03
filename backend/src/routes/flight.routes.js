@@ -1,5 +1,6 @@
 const express = require("express");
 const {
+  getFlightById,
   getAllFlights,
   createFlight,
   updateFlight,
@@ -10,6 +11,7 @@ const {
 const router = express.Router();
 
 router.get("/", getAllFlights);
+router.get("/:id", getFlightById);
 router.get("/search", searchFlights);
 router.post("/", createFlight);
 router.put("/:id", updateFlight);
