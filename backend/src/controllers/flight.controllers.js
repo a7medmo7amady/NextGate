@@ -1,5 +1,15 @@
 const Flight = require("../models/flight");
-s
+
+const getFlightById = async (req, res) => {
+  try {
+    const flight = await Flight.findById(req.params.id);
+    if (!flight) return res.status(404).json({ message: "Flight not found" });
+    res.json(flight);
+  } catch (error) {
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
 const getAllFlights = async (req, res) => {
   try {
     const flights = await Flight.find();
@@ -58,4 +68,4 @@ const searchFlights = async (req, res) => {
   }
 };
 
-module.exports = { getAllFlights, createFlight, updateFlight, deleteFlight, searchFlights };
+module.exports = { getFlightById, getAllFlights, createFlight, updateFlight, deleteFlight, searchFlights };
