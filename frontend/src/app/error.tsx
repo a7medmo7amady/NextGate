@@ -1,3 +1,4 @@
+"use client"
 import Image from "next/image";
 import Link from "next/link";
 
@@ -12,7 +13,7 @@ export default function NotFound() {
         priority
       />
       <div className="flex flex-col items-center gap-3">
-        <h1 className="text-5xl font-bold text-gray-800">404</h1>
+        <h1 className="text-5xl font-bold text-[#80b9e8]">404</h1>
         <p className="text-xl text-gray-500">Oops! Page not found.</p>
         <p className="max-w-sm text-gray-400">
           The page you're looking for doesn't exist or has been moved.
