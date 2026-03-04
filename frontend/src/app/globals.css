@@ -96,3 +96,38 @@ body {
   justify-content: center;
   cursor: default;
 }
+
+.footer {
+  background-color: #80b9e8;
+  padding: 30px 40px;
+  margin-top: 60px;
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.footer-socials {
+  display: flex;
+  gap: 14px;
+}
+
+.social-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  background: white;
+  color: black;
+  text-decoration: none;
+  font-weight: 500;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.social-btn:hover {
+  transform: scale(1.08);
+  opacity: 0.85;
+}
