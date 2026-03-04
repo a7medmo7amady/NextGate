@@ -18,33 +18,56 @@ export default function Footer() {
             href="#"
             target="_blank"
             rel="noopener noreferrer"
-            className="social-btn"
           >
-            LinkedIn
+            <Image
+              src="/linkedin.svg"
+              alt="LinkedIn"
+              width={26}
+              height={26}
+              className="social-icon"
+            />
           </a>
+
           <a
             href="#"
             target="_blank"
             rel="noopener noreferrer"
-            className="social-btn"
           >
-            Facebook
+            <Image
+              src="/facebook.svg"
+              alt="Facebook"
+              width={26}
+              height={26}
+              className="social-icon"
+            />
           </a>
+
           <a
             href="#"
             target="_blank"
             rel="noopener noreferrer"
-            className="social-btn"
           >
-            Instagram
+            <Image
+              src="/reddit.svg"
+              alt="Reddit"
+              width={26}
+              height={26}
+              className="social-icon"
+            />
           </a>
+
           <a
             href="#"
             target="_blank"
             rel="noopener noreferrer"
-            className="social-btn"
           >
-            YouTube
+            <Image
+              src="/youtube.svg"
+              alt="YouTube"
+              width={26}
+              height={26}
+              className="social-icon"
+            />
           </a>
         </div>
       </div>
