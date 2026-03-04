@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 150" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif">
+  <defs>
+    <style>
+      .dark-blue { fill: #1E3A8A; }
+      .light-blue { fill: #00A3E0; }
+    </style>
+  </defs>
+  <path class="light-blue" d="M125,95 C150,115 200,80 220,60 C240,40 280,30 310,50 L310,48 C280,28 240,38 220,58 C200,78 150,113 125,93 Z" />
+  <text x="75" y="90" class="dark-blue" font-size="56" font-weight="bold">Next<tspan class="dark-blue">Gate</tspan></text>
+  <!-- Plane silhouette -->
+  <g class="light-blue" transform="translate(305,28) rotate(-40) scale(2.2)">
+    <path d="M0,-2 L12,-2 L14,0 L12,2 L0,2 Z" />
+    <path d="M4,-2 L7,-9 L9,-9 L7,-2 Z" />
+    <path d="M4,2 L7,9 L9,9 L7,2 Z" />
+    <path d="M-1,-2 L1,-5 L2,-5 L1,-2 Z" />
+    <path d="M-1,2 L1,5 L2,5 L1,2 Z" />
+  </g>
+</svg>
