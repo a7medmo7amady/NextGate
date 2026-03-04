@@ -15,7 +15,7 @@ const sendVerificationEmail = async (email, code) => {
     to: email,
     subject: "Your Verification Code",
     html: `
-      <h2>Email Verification</h2>
+      <h2>Email Verification</h2> 
       <p>Your verification code is:</p>
       <h1 style="letter-spacing: 8px">${code}</h1>
       <p>This code expires in <b>10 minutes</b>.</p>
