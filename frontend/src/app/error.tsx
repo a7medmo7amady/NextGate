@@ -1,30 +1,25 @@
 "use client"
-import Image from "next/image";
 import Link from "next/link";
 
-export default function NotFound() {
+export default function Error({
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
   return (
-    <main className="flex min-h-[calc(100vh-120px)] flex-col items-center justify-center gap-8 px-4 py-16 text-center bg-white">
-      <Image
-        src="/error.webp"
-        alt="Page not found"
-        width={400}
-        height={300}
-        priority
-      />
+    <main className="flex min-h-[calc(100vh-120px)] flex-col items-center justify-center gap-8 px-4 py-16 text-center">
       <div className="flex flex-col items-center gap-3">
-        <h1 className="text-5xl font-bold text-[#80b9e8]">404</h1>
-        <p className="text-xl text-gray-500">Oops! Page not found.</p>
+        <h1 className="text-6xl font-bold" style={{ color: "var(--primary)" }}>500</h1>
+        <p className="text-xl" style={{ color: "var(--text)" }}>Something went wrong.</p>
         <p className="max-w-sm text-gray-400">
-          The page you're looking for doesn't exist or has been moved.
+          An unexpected error occurred. Please try again or go back home.
         </p>
       </div>
-      <Link
-        href="/"
-        className="nav-button"
-      >
-        Back to Home
-      </Link>
+      <div className="flex gap-4">
+        <button onClick={reset} className="nav-button">Try Again</button>
+        <Link href="/" className="nav-button">Back to Home</Link>
+      </div>
     </main>
   );
 }
