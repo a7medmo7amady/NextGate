@@ -13,6 +13,9 @@ body {
 }
 
 .navbar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
   width: 100%;
   background-color: #80b9e8;
   padding: 14px 32px;
@@ -87,7 +90,7 @@ body {
 .footer {
   background-color: #80b9e8;
   padding: 30px 40px;
-  margin-top: 60px;
+  margin-top: auto;
 }
 
 .footer-container {
@@ -117,4 +120,8 @@ body {
 .social-btn:hover {
   transform: scale(1.08);
   opacity: 0.85;
+}
+.welcomeParagraph {
+  color: black;
+  opacity: 75%;
 }
