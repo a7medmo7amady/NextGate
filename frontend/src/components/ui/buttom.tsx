@@ -30,7 +30,7 @@ export default function Button({
     "inline-flex items-center gap-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variantStyles: Record<string, React.CSSProperties> = {
-    primary: { backgroundColor: "var(--primary)", color: "#ffffff" },
+    primary: { background: "#ffffff", color: "var(--primary)", fontWeight: "bold" },
     outline: { border: "1.5px solid var(--primary)", color: "var(--primary)" },
     ghost: { color: "var(--text)" },
   };
