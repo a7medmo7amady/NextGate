@@ -1,29 +1,30 @@
 "use client";
 
 import { useState } from "react";
+import type { Flight } from "./FlightCard";
 
-export default function SearchForm() {
+interface SearchFormProps {
+  onSearch: (flights: Flight[], searched: boolean) => void;
+}
+
+export default function SearchForm({ onSearch }: SearchFormProps) {
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
   const [departDate, setDepartDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
   const [tickets, setTickets] = useState(1);
   const [flightType, setFlightType] = useState("round");
+  const [loading, setLoading] = useState(false);
 
   function swapLocations() {
     setFrom(to);
     setTo(from);
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!departDate) {
-      alert("Please select a departure date.");
-      return;
-    }
-
-    if (flightType === "round" && returnDate && returnDate < departDate) {
+    if (flightType === "round" && returnDate && departDate && returnDate < departDate) {
       alert("Return date cannot be before departure date.");
       return;
     }
@@ -33,14 +34,25 @@ export default function SearchForm() {
       return;
     }
 
-    console.log({
-      from,
-      to,
-      departDate,
-      returnDate,
-      tickets,
-      flightType,
-    });
+    try {
+      setLoading(true);
+      const params = new URLSearchParams();
+      if (from) params.set("from", from);
+      if (to) params.set("to", to);
+      if (departDate) params.set("date", departDate);
+
+      const res = await fetch(
+        `http://localhost:5000/api/flights/search?${params.toString()}`
+      );
+      if (!res.ok) throw new Error("Failed to fetch flights");
+      const data: Flight[] = await res.json();
+      onSearch(data, true);
+    } catch (err) {
+      console.error(err);
+      onSearch([], true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const today = new Date().toISOString().split("T")[0];
@@ -81,7 +93,7 @@ export default function SearchForm() {
         <button
           type="button"
           onClick={swapLocations}
-          className="bg-white rounded-full w-10 h-10 flex items-center justify-center text-lg mt-6 swapButton"
+          className="bg-white rounded-full w-10 h-10 flex items-center justify-center text-lg mt-6 swapButton cursor-pointer"
         >
           <img src="/switch-38.svg" alt="swtich" width={18} height={18} />
         </button>
@@ -156,9 +168,17 @@ export default function SearchForm() {
         {/* Search */}
         <button
           type="submit"
-          className="bg-white rounded-full w-12 h-12 flex items-center justify-center mt-6 shrink-0"
+          disabled={loading}
+          className="bg-white rounded-full w-12 h-12 flex items-center justify-center mt-6 shrink-0 cursor-pointer disabled:opacity-60"
         >
-          <img src="/search.svg" alt="Search" width={18} height={18} />
+          {loading ? (
+            <svg className="animate-spin w-5 h-5 text-[#80B9E8]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+            </svg>
+          ) : (
+            <img src="/search.svg" alt="Search" width={18} height={18} />
+          )}
         </button>
 
       </div>

@@ -13,8 +13,8 @@ const {
 const router = express.Router();
 
 router.get("/", getAllFlights);
+router.get("/search", searchFlights);  // must be before /:id
 router.get("/:id", getFlightById);
-router.get("/search", searchFlights);
 router.post("/", protect, adminOnly, createFlight);     
 router.put("/:id", protect, adminOnly, updateFlight);   
 router.delete("/:id", protect, adminOnly, deleteFlight);
