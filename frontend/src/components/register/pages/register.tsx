@@ -45,8 +45,7 @@ export default function Register() {
   };
 
   const handleGoogleRegister = () => {
-    // TODO: connect to Google OAuth
-    console.log("Google register");
+    window.location.href = "http://localhost:5000/api/auth/google";
   };
 
   return (

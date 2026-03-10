@@ -39,8 +39,7 @@ export default function Login() {
   };
 
   const handleGoogleLogin = () => {
-    // TODO: connect to Google OAuth
-    console.log("Google login");
+    window.location.href = "http://localhost:5000/api/auth/google";
   };
 
   return (
