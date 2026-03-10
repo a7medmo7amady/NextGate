@@ -3,14 +3,22 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [hasSession, setHasSession] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) setHasSession(true);
   }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setHasSession(false);
+    router.push("/");
+  };
 
   return (
     <nav className="navbar">
@@ -43,11 +51,15 @@ export default function Navbar() {
                   width="28"
                   height="28"
                   viewBox="0 0 24 24"
-                  fill="black"
+                  fill="white"
                 >
                   <path d="M12 12c2.76 0 5-2.46 5-5.5S14.76 1 12 1 7 3.46 7 6.5 9.24 12 12 12zm0 2c-4.42 0-8 2.91-8 6.5V23h16v-2.5c0-3.59-3.58-6.5-8-6.5z" />
                 </svg>
               </div>
+
+              <button onClick={handleLogout} className="nav-button">
+                Logout
+              </button>
             </>
           ) : (
             <>
