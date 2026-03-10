@@ -7,9 +7,28 @@ export interface Flight {
   price: number;
   AvailableSeats: number;
   seats: number;
+  class: "economy" | "business" | "first";
+  type: "oneway" | "round";
 }
 
-export default function FlightCard({ flight }: { flight: Flight }) {
+export type SearchResult =
+  | { type: "all";    flights: Flight[] }
+  | { type: "oneway"; flights: Flight[] }
+  | { type: "round";  outbound: Flight[]; return: Flight[] };
+
+const CLASS_STYLES: Record<string, string> = {
+  economy:  "bg-gray-100 text-gray-600",
+  business: "bg-blue-100 text-blue-700",
+  first:    "bg-yellow-100 text-yellow-700",
+};
+
+export default function FlightCard({
+  flight,
+  requestedTickets = 1,
+}: {
+  flight: Flight;
+  requestedTickets?: number;
+}) {
   const departureDate = new Date(flight.date);
   const formattedDate = departureDate.toLocaleDateString("en-US", {
     weekday: "short",
@@ -25,24 +44,37 @@ export default function FlightCard({ flight }: { flight: Flight }) {
   const occupancy = flight.seats - flight.AvailableSeats;
   const occupancyPct = Math.round((occupancy / flight.seats) * 100);
 
+  const soldOut = flight.AvailableSeats === 0;
+  const notEnough = !soldOut && flight.AvailableSeats < requestedTickets;
+  const unavailable = soldOut || notEnough;
+
   return (
     <div className="bg-white rounded-2xl shadow-sm p-5 flex flex-col gap-4">
       {/* Header row */}
       <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
-          Flight {flight.flightNumber}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">
+            Flight {flight.flightNumber}
+          </span>
+          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${CLASS_STYLES[flight.class] ?? CLASS_STYLES.economy}`}>
+            {flight.class}
+          </span>
+        </div>
         <span
           className={`text-xs font-semibold px-3 py-1 rounded-full ${
-            flight.AvailableSeats === 0
+            soldOut
               ? "bg-red-100 text-red-600"
+              : notEnough
+              ? "bg-orange-100 text-orange-600"
               : flight.AvailableSeats <= 5
               ? "bg-yellow-100 text-yellow-700"
               : "bg-green-100 text-green-700"
           }`}
         >
-          {flight.AvailableSeats === 0
+          {soldOut
             ? "Sold Out"
+            : notEnough
+            ? `Not enough tickets (${flight.AvailableSeats} left)`
             : `${flight.AvailableSeats} seat${flight.AvailableSeats !== 1 ? "s" : ""} left`}
         </span>
       </div>
@@ -123,7 +155,7 @@ export default function FlightCard({ flight }: { flight: Flight }) {
         </div>
 
         <button
-          disabled={flight.AvailableSeats === 0}
+          disabled={unavailable}
           className="bg-[#80B9E8] text-white text-sm font-semibold px-6 py-2 rounded-full hover:bg-[#5fa3d9] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
         >
           Book Now
