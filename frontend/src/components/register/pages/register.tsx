@@ -10,11 +10,38 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = (e: React.SyntheticEvent<HTMLFormElement>) => {
+  const handleRegister = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // TODO: connect to backend auth
-    console.log("Register with:", name, email, password);
+    setError("");
+
+    if (password !== confirm) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Registration failed.");
+        return;
+      }
+
+      router.push(`/verify?email=${encodeURIComponent(email)}`);
+    } catch {
+      setError("Could not connect to server.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleRegister = () => {
@@ -30,7 +57,6 @@ export default function Register() {
           Join NextGate today
         </p>
 
-        {/* Google */}
         <button
           onClick={handleGoogleRegister}
           className="w-full flex items-center justify-center gap-3 rounded-lg px-4 py-2.5 mb-4 text-sm font-medium transition hover:opacity-80"
@@ -51,6 +77,12 @@ export default function Register() {
           <hr className="flex-1" style={{ borderColor: "rgba(255,255,255,0.4)" }} />
         </div>
 
+        {error && (
+          <p className="text-sm mb-3 text-center rounded-lg px-3 py-2" style={{ background: "rgba(255,255,255,0.2)", color: "#fff" }}>
+            {error}
+          </p>
+        )}
+
         <form onSubmit={handleRegister} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1 text-left">
             <label className="text-sm font-medium text-white">Full Name</label>
@@ -58,7 +90,7 @@ export default function Register() {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="John Doe"
+              placeholder="Walter White"
               required
               className="rounded-lg px-3 py-2 text-sm outline-none"
               style={{ background: "var(--background)", border: "none", color: "var(--text)" }}
@@ -71,7 +103,7 @@ export default function Register() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
+              placeholder="Me@gmail.com"
               required
               className="rounded-lg px-3 py-2 text-sm outline-none"
               style={{ background: "var(--background)", border: "none", color: "var(--text)" }}
@@ -104,8 +136,8 @@ export default function Register() {
             />
           </div>
 
-          <button type="submit" className="nav-button w-full justify-center mt-2">
-            Create Account
+          <button type="submit" disabled={loading} className="nav-button w-full justify-center mt-2">
+            {loading ? "Creating" : "Create Account"}
           </button>
         </form>
 
