@@ -8,13 +8,38 @@ export default function Login() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.SyntheticEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Login with:", email, password);
+    setError("");
+    setLoading(true);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || "Login failed.");
+        return;
+      }
+
+      localStorage.setItem("token", data.token);
+      router.push("/");
+    } catch {
+      setError("Could not connect to server.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoogleLogin = () => {
+    // TODO: connect to Google OAuth
     console.log("Google login");
   };
 
@@ -25,6 +50,7 @@ export default function Login() {
         <p className="mb-6 text-sm" style={{ color: "rgba(255,255,255,0.75)" }}>
           Login to your NextGate account
         </p>
+
         <button
           onClick={handleGoogleLogin}
           className="w-full flex items-center justify-center gap-3 rounded-lg px-4 py-2.5 mb-4 text-sm font-medium transition hover:opacity-80"
@@ -44,6 +70,13 @@ export default function Login() {
           <span className="text-xs" style={{ color: "rgba(255,255,255,0.75)" }}>or</span>
           <hr className="flex-1" style={{ borderColor: "rgba(255,255,255,0.4)" }} />
         </div>
+
+        {error && (
+          <p className="text-sm mb-3 text-center rounded-lg px-3 py-2" style={{ background: "rgba(255,255,255,0.2)", color: "#fff" }}>
+            {error}
+          </p>
+        )}
+
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1 text-left">
             <label className="text-sm font-medium text-white">Email</label>
@@ -54,11 +87,7 @@ export default function Login() {
               placeholder="you@example.com"
               required
               className="rounded-lg px-3 py-2 text-sm outline-none"
-              style={{
-                background: "var(--background)",
-                border: "none",
-                color: "var(--text)",
-              }}
+              style={{ background: "var(--background)", border: "none", color: "var(--text)" }}
             />
           </div>
 
@@ -71,16 +100,12 @@ export default function Login() {
               placeholder="••••••••"
               required
               className="rounded-lg px-3 py-2 text-sm outline-none"
-              style={{
-                background: "var(--background)",
-                border: "none",
-                color: "var(--text)",
-              }}
+              style={{ background: "var(--background)", border: "none", color: "var(--text)" }}
             />
           </div>
 
-          <button type="submit" className="nav-button w-full justify-center mt-2">
-            Login
+          <button type="submit" disabled={loading} className="nav-button w-full justify-center mt-2">
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
