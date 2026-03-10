@@ -59,7 +59,7 @@ export default function Navbar() {
               </Link>
 
               <Link
-                href="/register"
+                href="/signup"
                 className="nav-button register"
               >
                 Register
