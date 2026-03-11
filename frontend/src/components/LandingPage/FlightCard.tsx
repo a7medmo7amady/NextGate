@@ -1,3 +1,5 @@
+"use client";
+
 export interface Flight {
   _id: string;
   flightNumber: string;
@@ -22,13 +24,53 @@ const CLASS_STYLES: Record<string, string> = {
   first:    "bg-yellow-100 text-yellow-700",
 };
 
+import { useState } from "react";
+import { getAuthCookie } from "@/lib/auth";
+import { useRouter } from "next/navigation";
+
 export default function FlightCard({
   flight,
   requestedTickets = 1,
+  onBooked,
 }: {
   flight: Flight;
   requestedTickets?: number;
+  onBooked?: (flightId: string) => void;
 }) {
+  const [booking, setBooking] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [bookingError, setBookingError] = useState("");
+  const router = useRouter();
+
+  const handleBook = async () => {
+    const token = getAuthCookie();
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+    setBooking("loading");
+    setBookingError("");
+    try {
+      const res = await fetch("http://localhost:5000/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ flightId: flight._id, quantity: requestedTickets }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setBookingError(data.message || "Booking failed.");
+        setBooking("error");
+        return;
+      }
+      setBooking("done");
+      onBooked?.(flight._id);
+    } catch {
+      setBookingError("Could not connect to server.");
+      setBooking("error");
+    }
+  };
   const departureDate = new Date(flight.date);
   const formattedDate = departureDate.toLocaleDateString("en-US", {
     weekday: "short",
@@ -154,12 +196,26 @@ export default function FlightCard({
           </p>
         </div>
 
-        <button
-          disabled={unavailable}
-          className="bg-[#80B9E8] text-white text-sm font-semibold px-6 py-2 rounded-full hover:bg-[#5fa3d9] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
-        >
-          Book Now
-        </button>
+        <div className="flex flex-col items-end gap-1">
+          {booking === "done" ? (
+            <span className="text-green-600 font-semibold text-sm px-4 py-2">✓ Booked!</span>
+          ) : (
+            <button
+              onClick={handleBook}
+              disabled={unavailable || booking === "loading"}
+              className="bg-[#80B9E8] text-white text-sm font-semibold px-6 py-2 rounded-full hover:bg-[#5fa3d9] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              {booking === "loading"
+                ? "Booking…"
+                : requestedTickets > 1
+                ? `Book ${requestedTickets} Tickets`
+                : "Book Now"}
+            </button>
+          )}
+          {bookingError && (
+            <span className="text-red-500 text-xs">{bookingError}</span>
+          )}
+        </div>
       </div>
     </div>
   );
