@@ -67,17 +67,24 @@ const searchFlights = async (req, res) => {
 
     // ── Round trip: two parallel queries ─────────────────────────────────────
     if (flightType === "round") {
-      const outboundFilter = { ...baseFilter, type: "round" };
+      // Outbound: A → B on departDate
+      const outboundFilter = { ...baseFilter };
       const departDateFilter = makeDateFilter(departDate);
       if (departDateFilter) outboundFilter.date = departDateFilter;
 
-      // Return leg swaps from ↔ to
-      const returnFilter = { type: "round" };
+      // Return leg: swap from ↔ to, filter by returnDate (or >= departDate if unset)
+      const returnFilter = {};
       if (flightClass) returnFilter.class = flightClass.toLowerCase();
       if (to)   returnFilter.from = { $regex: to.trim(),   $options: "i" };
       if (from) returnFilter.to   = { $regex: from.trim(), $options: "i" };
+
       const returnDateFilter = makeDateFilter(returnDate);
-      if (returnDateFilter) returnFilter.date = returnDateFilter;
+      if (returnDateFilter) {
+        returnFilter.date = returnDateFilter;
+      } else if (departDate) {
+        // No return date given — at least ensure return is on/after departure date
+        returnFilter.date = { $gte: new Date(departDate) };
+      }
 
       const [outbound, returnFlights] = await Promise.all([
         Flight.find(outboundFilter),

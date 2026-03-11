@@ -5,14 +5,30 @@ import LandingPageCard from "../LandingPageCard";
 import SearchForm from "../SearchForm";
 import Welcome from "../Welcome";
 import FlightCard, { type Flight, type SearchResult } from "../FlightCard";
+import AddFlightModal from "../AddFlightModal";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function LandingPage() {
+  const { isAdmin } = useAuth();
   const [result, setResult] = useState<SearchResult | null>(null);
   const [requestedTickets, setRequestedTickets] = useState(1);
+  const [modalOpen, setModalOpen] = useState(false);
 
   function handleSearch(data: SearchResult, tickets: number) {
     setResult(data);
     setRequestedTickets(tickets);
+  }
+
+  // When a new flight is created, append it to the current result set so it
+  // shows up immediately without requiring a re-search.
+  function handleFlightCreated(flight: Flight) {
+    setResult((prev) => {
+      if (!prev) return { type: "all", flights: [flight] };
+      if (prev.type === "round") {
+        return { ...prev, outbound: [flight, ...prev.outbound] };
+      }
+      return { ...prev, flights: [flight, ...prev.flights] };
+    });
   }
 
   const totalFound =
@@ -56,6 +72,20 @@ export default function LandingPage() {
         <SearchForm onSearch={handleSearch} />
       </LandingPageCard>
 
+      {/* Admin: Add Flight button */}
+      {isAdmin && (
+        <div className="flex justify-end w-[80vw] mx-auto mb-2">
+          <button
+            onClick={() => setModalOpen(true)}
+            className="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold text-white shadow-sm transition-colors cursor-pointer"
+            style={{ background: "#80b9e8" }}
+          >
+            <span className="text-lg leading-none">+</span>
+            Add Flight
+          </button>
+        </div>
+      )}
+
       {result !== null && (
         <LandingPageCard>
           <h2 className="text-white font-semibold text-lg mb-4">
@@ -75,6 +105,12 @@ export default function LandingPage() {
           )}
         </LandingPageCard>
       )}
+
+      <AddFlightModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onCreated={handleFlightCreated}
+      />
     </main>
   );
 }

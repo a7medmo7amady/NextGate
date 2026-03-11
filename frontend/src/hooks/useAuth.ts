@@ -4,12 +4,24 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { getAuthCookie, clearAuthCookie } from "@/lib/auth";
 
+function decodeRole(token: string): string | null {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.role ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export function useAuth() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const router = useRouter();
 
   const sync = useCallback(() => {
-    setIsLoggedIn(!!getAuthCookie());
+    const token = getAuthCookie();
+    setIsLoggedIn(!!token);
+    setIsAdmin(!!token && decodeRole(token) === "admin");
   }, []);
 
   useEffect(() => {
@@ -26,5 +38,5 @@ export function useAuth() {
     router.push("/");
   }, [router]);
 
-  return { isLoggedIn, logout };
+  return { isLoggedIn, isAdmin, logout };
 }

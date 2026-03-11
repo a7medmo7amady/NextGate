@@ -16,7 +16,7 @@ router.get(
   passport.authenticate("google", { session: false, failureRedirect: "http://localhost:3000/login?error=google_failed" }),
   (req, res) => {
     const token = jwt.sign(
-      { userId: req.user._id },
+      { userId: req.user._id, role: req.user.role },
       process.env.JWT_SECRET,
       { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
     );
