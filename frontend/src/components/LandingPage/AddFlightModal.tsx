@@ -15,6 +15,7 @@ const EMPTY = {
   from: "",
   to: "",
   date: "",
+  returnDate: "",
   price: "",
   AvailableSeats: "",
   seats: "",
@@ -65,37 +66,59 @@ export default function AddFlightModal({ open, onClose, onCreated }: Props) {
     const token = getAuthCookie();
     if (!token) { setError("Not authenticated."); return; }
 
+    if (form.type === "round" && !form.returnDate) {
+      setError("Please provide a return date for round trips.");
+      return;
+    }
+
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/flights", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          flightNumber: form.flightNumber.trim().toUpperCase(),
-          from: form.from.trim(),
-          to: form.to.trim(),
-          date: new Date(form.date).toISOString(),
+      const postFlight = async (body: object) => {
+        const res = await fetch("http://localhost:5000/api/flights", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed to create flight.");
+        return data;
+      };
+
+      const baseNumber = form.flightNumber.trim().toUpperCase();
+      const outbound = await postFlight({
+        flightNumber: baseNumber,
+        from: form.from.trim(),
+        to: form.to.trim(),
+        date: new Date(form.date).toISOString(),
+        price,
+        seats,
+        AvailableSeats: available,
+        class: form.class,
+        type: form.type,
+      });
+      onCreated(outbound);
+
+      if (form.type === "round") {
+        const returnLeg = await postFlight({
+          flightNumber: baseNumber + "R",
+          from: form.to.trim(),
+          to: form.from.trim(),
+          date: new Date(form.returnDate).toISOString(),
           price,
           seats,
           AvailableSeats: available,
           class: form.class,
-          type: form.type,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.message || "Failed to create flight.");
-        return;
+          type: "round",
+        });
+        onCreated(returnLeg);
       }
 
-      onCreated(data);
       onClose();
-    } catch {
-      setError("Could not connect to server.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not connect to server.");
     } finally {
       setLoading(false);
     }
@@ -216,6 +239,21 @@ export default function AddFlightModal({ open, onClose, onCreated }: Props) {
               </select>
             </div>
           </div>
+
+          {/* Return date — only for round trips */}
+          {form.type === "round" && (
+            <div className="flex flex-col gap-1">
+              <label className={labelCls}>Return Date & Time</label>
+              <input
+                required
+                type="datetime-local"
+                value={form.returnDate}
+                onChange={(e) => set("returnDate", e.target.value)}
+                min={form.date || undefined}
+                className={inputCls}
+              />
+            </div>
+          )}
 
           {/* Row: price + seats + available */}
           <div className="grid grid-cols-3 gap-3">
