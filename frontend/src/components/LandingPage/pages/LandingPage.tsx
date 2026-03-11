@@ -72,7 +72,6 @@ export default function LandingPage() {
         <SearchForm onSearch={handleSearch} />
       </LandingPageCard>
 
-      {/* Admin: Add Flight button */}
       {isAdmin && (
         <div className="flex justify-end w-[80vw] mx-auto mb-2">
           <button

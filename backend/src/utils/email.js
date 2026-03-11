@@ -13,9 +13,9 @@ const sendVerificationEmail = async (email, code) => {
   await transporter.sendMail({
     from: process.env.EMAIL_USER,
     to: email,
-    subject: "Your Verification Code",
+    subject: "Your Verification Code for NextGate",
     html: `
-      <h2>Email Verification</h2> 
+      <h2>Email Verification-NextGate</h2> 
       <p>Your verification code is:</p>
       <h1 style="letter-spacing: 8px">${code}</h1>
       <p>This code expires in <b>10 minutes</b>.</p>

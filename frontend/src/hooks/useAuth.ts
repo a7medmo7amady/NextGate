@@ -25,10 +25,8 @@ export function useAuth() {
   }, []);
 
   useEffect(() => {
-    // Initial check
     sync();
 
-    // Re-sync whenever our custom event fires (set/clear cookie)
     window.addEventListener("authchange", sync);
     return () => window.removeEventListener("authchange", sync);
   }, [sync]);

@@ -173,7 +173,6 @@ export default function FlightCard({
         </span>
       </div>
 
-      {/* Seat occupancy bar */}
       <div>
         <div className="flex justify-between text-xs text-gray-500 mb-1">
           <span>Seat availability</span>
@@ -187,7 +186,6 @@ export default function FlightCard({
         </div>
       </div>
 
-      {/* Footer */}
       <div className="flex items-center justify-between pt-1">
         <div>
           <p className="text-xs text-gray-400">Price per seat</p>

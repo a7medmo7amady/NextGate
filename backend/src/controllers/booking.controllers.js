@@ -24,7 +24,6 @@ const bookFlight = async (req, res) => {
       return res.status(400).json({ message: "quantity must be at least 1" });
     }
 
-    // Atomically decrement – only succeeds if enough seats remain
     const flight = await Flight.findOneAndUpdate(
       { _id: flightId, AvailableSeats: { $gte: quantity } },
       { $inc: { AvailableSeats: -quantity } },
@@ -42,7 +41,6 @@ const bookFlight = async (req, res) => {
       });
     }
 
-    // Push booking snapshot into user document (one-to-few)
     const booking = {
       flightId:     flight._id,
       flightNumber: flight.flightNumber,

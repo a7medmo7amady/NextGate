@@ -29,8 +29,7 @@ export default function Navbar() {
                 Flight History
               </Link>
 
-              {/* Profile dropdown — group hover keeps it open while moving mouse into it */}
-              <div className="profile-menu group">
+           <div className="profile-menu group">
                 <button className="profile-icon" aria-label="Account menu">
                   <Image
                     src="/user.svg"
@@ -40,7 +39,6 @@ export default function Navbar() {
                   />
                 </button>
 
-                {/* invisible bridge fills the gap so hover doesn't break */}
                 <div className="dropdown-bridge" />
 
                 <div className="profile-dropdown">
