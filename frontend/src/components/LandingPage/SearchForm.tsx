@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import type { Flight } from "./FlightCard";
+import type { Flight, SearchResult } from "./FlightCard";
 
 interface SearchFormProps {
-  onSearch: (flights: Flight[], searched: boolean) => void;
+  onSearch: (result: SearchResult, tickets: number) => void;
 }
 
 export default function SearchForm({ onSearch }: SearchFormProps) {
@@ -14,6 +14,7 @@ export default function SearchForm({ onSearch }: SearchFormProps) {
   const [returnDate, setReturnDate] = useState("");
   const [tickets, setTickets] = useState(1);
   const [flightType, setFlightType] = useState("round");
+  const [ticketType, setTicketType] = useState("");
   const [loading, setLoading] = useState(false);
 
   function swapLocations() {
@@ -23,6 +24,11 @@ export default function SearchForm({ onSearch }: SearchFormProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (flightType === "round" && returnDate && !departDate) {
+      alert("Please select a departure date before setting a return date.");
+      return;
+    }
 
     if (flightType === "round" && returnDate && departDate && returnDate < departDate) {
       alert("Return date cannot be before departure date.");
@@ -39,17 +45,26 @@ export default function SearchForm({ onSearch }: SearchFormProps) {
       const params = new URLSearchParams();
       if (from) params.set("from", from);
       if (to) params.set("to", to);
-      if (departDate) params.set("date", departDate);
+      if (departDate) params.set("departDate", departDate);
+      if (flightType === "round" && returnDate) params.set("returnDate", returnDate);
+      if (ticketType) params.set("class", ticketType);
+      params.set("flightType", flightType);
 
       const res = await fetch(
         `http://localhost:5000/api/flights/search?${params.toString()}`
       );
       if (!res.ok) throw new Error("Failed to fetch flights");
-      const data: Flight[] = await res.json();
-      onSearch(data, true);
+      const data: SearchResult = await res.json();
+      onSearch(data, tickets);
     } catch (err) {
       console.error(err);
-      onSearch([], true);
+      const empty: SearchResult =
+        flightType === "round"
+          ? { type: "round", outbound: [], return: [] }
+          : flightType === "oneway"
+          ? { type: "oneway", flights: [] }
+          : { type: "all", flights: [] };
+      onSearch(empty, tickets);
     } finally {
       setLoading(false);
     }
@@ -158,10 +173,15 @@ export default function SearchForm({ onSearch }: SearchFormProps) {
           <label className="text-sm font-medium text-white mb-1">
             Ticket Type
           </label>
-          <select className="bg-white rounded-full px-5 py-3 w-40">
-            <option>Economy</option>
-            <option>Business</option>
-            <option>First</option>
+          <select
+            value={ticketType}
+            onChange={(e) => setTicketType(e.target.value)}
+            className="bg-white rounded-full px-5 py-3 w-40"
+          >
+            <option value="">Any Class</option>
+            <option value="economy">Economy</option>
+            <option value="business">Business</option>
+            <option value="first">First</option>
           </select>
         </div>
 

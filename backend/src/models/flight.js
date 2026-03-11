@@ -7,7 +7,9 @@ const flightSchema = new mongoose.Schema({
     date : {type: Date, required:true},
     price : {type: Number, required:true},
     AvailableSeats: {type: Number, required:true},
-    seats:{type:Number,  required:true},},{
+    seats:{type:Number,  required:true},
+    class: {type: String, enum: ["economy", "business", "first"], default: "economy"},
+    type: {type: String, enum: ["oneway", "round"], default: "oneway"},},{
         timestamps: true
     
 });

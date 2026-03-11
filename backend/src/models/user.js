@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const bookingSchema = require("./booking");
 
 const userSchema = new mongoose.Schema(
   {
@@ -8,7 +9,8 @@ const userSchema = new mongoose.Schema(
     isVerified: { type: Boolean, default: false },
     verificationCode: { type: String, default: undefined },
     verificationCodeExpires: { type: Date, default: undefined },
-    role: { type: String, enum: ["user", "admin"], default: "user" }
+    role: { type: String, enum: ["user", "admin"], default: "user" },
+    bookings: { type: [bookingSchema], default: [] },
   },
   { timestamps: true }
 );

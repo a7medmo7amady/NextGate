@@ -5,9 +5,9 @@
 # then uses the admin token to create sample flights.
 #
 # Prerequisites:
-#   • Backend running on http://localhost:5000
-#   • mongosh available in PATH
+#   • Docker running with: docker compose up -d
 #   • jq available in PATH  (brew install jq / apt install jq)
+#   • mongosh is invoked via docker exec (no local install needed)
 # =============================================================================
 
 set -euo pipefail
@@ -46,13 +46,20 @@ curl -s -X POST "$BASE/auth/register" \
 info "Admin user registered (admin@example.com)"
 
 # =============================================================================
-# 3. Promote admin user in MongoDB
+# 3. Verify both users & promote admin in MongoDB
 # =============================================================================
-section "3 · Promote admin@example.com to role=admin via mongosh"
+section "3 · Verify users & promote admin@example.com via mongosh"
 
-mongosh "$DB_NAME" --quiet --eval \
-  'db.users.updateOne({email:"admin@example.com"},{$set:{role:"admin"}})' \
-  | jq -R .
+docker exec nextgate-mongo mongosh "$DB_NAME" --quiet --eval '
+  db.users.updateMany(
+    { email: { $in: ["jane@example.com", "admin@example.com"] } },
+    { $set: { isVerified: true } }
+  );
+  db.users.updateOne(
+    { email: "admin@example.com" },
+    { $set: { role: "admin" } }
+  );
+' | jq -R .
 
 info "Role promoted to admin"
 
@@ -91,11 +98,25 @@ curl -s -X POST "$BASE/auth/login" \
 section "6 · Create flights using admin token"
 
 FLIGHTS=(
-  '{"flightNumber":"NG101","from":"New York","to":"London","date":"2026-06-15T08:00:00Z","price":450,"AvailableSeats":120,"seats":180}'
-  '{"flightNumber":"NG202","from":"London","to":"Dubai","date":"2026-06-16T14:30:00Z","price":320,"AvailableSeats":60,"seats":200}'
-  '{"flightNumber":"NG303","from":"Dubai","to":"Singapore","date":"2026-06-17T22:00:00Z","price":280,"AvailableSeats":5,"seats":150}'
-  '{"flightNumber":"NG404","from":"Singapore","to":"Tokyo","date":"2026-06-18T06:45:00Z","price":195,"AvailableSeats":0,"seats":120}'
-  '{"flightNumber":"NG505","from":"Tokyo","to":"New York","date":"2026-06-20T11:00:00Z","price":620,"AvailableSeats":88,"seats":250}'
+  # ── Round-trip pairs: New York ↔ London ─────────────────────────────────
+  '{"flightNumber":"NG101","from":"New York","to":"London","date":"2026-06-15T08:00:00Z","price":450,"AvailableSeats":120,"seats":180,"class":"economy","type":"round"}'
+  '{"flightNumber":"NG102","from":"New York","to":"London","date":"2026-06-15T08:00:00Z","price":950,"AvailableSeats":30,"seats":40,"class":"business","type":"round"}'
+  '{"flightNumber":"NG103","from":"New York","to":"London","date":"2026-06-15T08:00:00Z","price":2200,"AvailableSeats":8,"seats":10,"class":"first","type":"round"}'
+  '{"flightNumber":"NG110","from":"London","to":"New York","date":"2026-06-25T09:00:00Z","price":480,"AvailableSeats":100,"seats":180,"class":"economy","type":"round"}'
+  '{"flightNumber":"NG111","from":"London","to":"New York","date":"2026-06-25T09:00:00Z","price":980,"AvailableSeats":25,"seats":40,"class":"business","type":"round"}'
+  '{"flightNumber":"NG112","from":"London","to":"New York","date":"2026-06-25T09:00:00Z","price":2400,"AvailableSeats":6,"seats":10,"class":"first","type":"round"}'
+  # ── Round-trip pairs: London ↔ Dubai ─────────────────────────────────────
+  '{"flightNumber":"NG202","from":"London","to":"Dubai","date":"2026-06-16T14:30:00Z","price":320,"AvailableSeats":60,"seats":200,"class":"economy","type":"round"}'
+  '{"flightNumber":"NG203","from":"London","to":"Dubai","date":"2026-06-16T14:30:00Z","price":780,"AvailableSeats":20,"seats":30,"class":"business","type":"round"}'
+  '{"flightNumber":"NG210","from":"Dubai","to":"London","date":"2026-06-23T16:00:00Z","price":340,"AvailableSeats":80,"seats":200,"class":"economy","type":"round"}'
+  '{"flightNumber":"NG211","from":"Dubai","to":"London","date":"2026-06-23T16:00:00Z","price":800,"AvailableSeats":18,"seats":30,"class":"business","type":"round"}'
+  # ── One-way only flights ─────────────────────────────────────────────────
+  '{"flightNumber":"NG303","from":"Dubai","to":"Singapore","date":"2026-06-17T22:00:00Z","price":280,"AvailableSeats":5,"seats":150,"class":"economy","type":"oneway"}'
+  '{"flightNumber":"NG304","from":"Dubai","to":"Singapore","date":"2026-06-17T22:00:00Z","price":650,"AvailableSeats":12,"seats":30,"class":"business","type":"oneway"}'
+  '{"flightNumber":"NG404","from":"Singapore","to":"Tokyo","date":"2026-06-18T06:45:00Z","price":195,"AvailableSeats":0,"seats":120,"class":"economy","type":"oneway"}'
+  '{"flightNumber":"NG405","from":"Singapore","to":"Tokyo","date":"2026-06-18T06:45:00Z","price":1800,"AvailableSeats":4,"seats":8,"class":"first","type":"oneway"}'
+  '{"flightNumber":"NG505","from":"Tokyo","to":"New York","date":"2026-06-20T11:00:00Z","price":620,"AvailableSeats":88,"seats":250,"class":"economy","type":"oneway"}'
+  '{"flightNumber":"NG506","from":"Tokyo","to":"New York","date":"2026-06-20T11:00:00Z","price":1400,"AvailableSeats":15,"seats":50,"class":"business","type":"oneway"}'
 )
 
 for flight in "${FLIGHTS[@]}"; do

@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { setAuthCookie } from "@/lib/auth";
 
 function CallbackHandler() {
   const router = useRouter();
@@ -11,7 +12,7 @@ function CallbackHandler() {
   useEffect(() => {
     const token = searchParams.get("token");
     if (token) {
-      localStorage.setItem("token", token);
+      setAuthCookie(token);
       router.push("/");
     } else {
       router.push("/login?error=google_failed");
