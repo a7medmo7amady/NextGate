@@ -5,9 +5,9 @@
 # then uses the admin token to create sample flights.
 #
 # Prerequisites:
-#   • Backend running on http://localhost:5000
-#   • mongosh available in PATH
+#   • Docker running with: docker compose up -d
 #   • jq available in PATH  (brew install jq / apt install jq)
+#   • mongosh is invoked via docker exec (no local install needed)
 # =============================================================================
 
 set -euo pipefail
@@ -46,13 +46,20 @@ curl -s -X POST "$BASE/auth/register" \
 info "Admin user registered (admin@example.com)"
 
 # =============================================================================
-# 3. Promote admin user in MongoDB
+# 3. Verify both users & promote admin in MongoDB
 # =============================================================================
-section "3 · Promote admin@example.com to role=admin via mongosh"
+section "3 · Verify users & promote admin@example.com via mongosh"
 
-mongosh "$DB_NAME" --quiet --eval \
-  'db.users.updateOne({email:"admin@example.com"},{$set:{role:"admin"}})' \
-  | jq -R .
+docker exec nextgate-mongo mongosh "$DB_NAME" --quiet --eval '
+  db.users.updateMany(
+    { email: { $in: ["jane@example.com", "admin@example.com"] } },
+    { $set: { isVerified: true } }
+  );
+  db.users.updateOne(
+    { email: "admin@example.com" },
+    { $set: { role: "admin" } }
+  );
+' | jq -R .
 
 info "Role promoted to admin"
 
