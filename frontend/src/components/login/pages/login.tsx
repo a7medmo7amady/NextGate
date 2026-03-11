@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card } from "../../Card";
+import { setAuthCookie } from "@/lib/auth";
 
 export default function Login() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function Login() {
         return;
       }
 
-      localStorage.setItem("token", data.token);
+      setAuthCookie(data.token);
       router.push("/");
     } catch {
       setError("Could not connect to server.");
