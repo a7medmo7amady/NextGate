@@ -16,6 +16,7 @@ const sendVerificationEmail = async (email, code) => {
     subject: "Your Verification Code for NextGate",
     html: `
       <h2>Email Verification-NextGate</h2> 
+      <p>Welcome to NextGate</p>
       <p>Your verification code is:</p>
       <h1 style="letter-spacing: 8px">${code}</h1>
       <p>This code expires in <b>10 minutes</b>.</p>
