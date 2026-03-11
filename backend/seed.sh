@@ -83,14 +83,23 @@ fi
 info "Admin token obtained: ${ADMIN_TOKEN:0:40}..."
 
 # =============================================================================
-# 5. Login as normal user (demo – no further privileged calls)
+# 5. Login as normal user – capture token
 # =============================================================================
-section "5 · Login as normal user (demo)"
+section "5 · Login as normal user & capture token"
 
-curl -s -X POST "$BASE/auth/login" \
-  -H "Content-Type: application/json" \
-  -d '{"email":"jane@example.com","password":"password123"}' \
-  | jq '{token:.token, user:.user}'
+JANE_TOKEN=$(
+  curl -s -X POST "$BASE/auth/login" \
+    -H "Content-Type: application/json" \
+    -d '{"email":"jane@example.com","password":"password123"}' \
+  | jq -r '.token'
+)
+
+if [[ -z "$JANE_TOKEN" || "$JANE_TOKEN" == "null" ]]; then
+  echo -e "${RED}[ERROR]${NC} Failed to obtain Jane's token. Aborting."
+  exit 1
+fi
+
+info "Jane token obtained: ${JANE_TOKEN:0:40}..."
 
 # =============================================================================
 # 6. Create flights (admin only)
@@ -98,6 +107,8 @@ curl -s -X POST "$BASE/auth/login" \
 section "6 · Create flights using admin token"
 
 FLIGHTS=(
+  # ── Past flight (for booking history demo) ───────────────────────────────
+  '{"flightNumber":"NG001","from":"New York","to":"Paris","date":"2025-11-10T09:00:00Z","price":399,"AvailableSeats":50,"seats":180,"class":"economy","type":"oneway"}'
   # ── Round-trip pairs: New York ↔ London ─────────────────────────────────
   '{"flightNumber":"NG101","from":"New York","to":"London","date":"2026-06-15T08:00:00Z","price":450,"AvailableSeats":120,"seats":180,"class":"economy","type":"round"}'
   '{"flightNumber":"NG102","from":"New York","to":"London","date":"2026-06-15T08:00:00Z","price":950,"AvailableSeats":30,"seats":40,"class":"business","type":"round"}'
@@ -128,5 +139,26 @@ for flight in "${FLIGHTS[@]}"; do
     -d "$flight" \
     | jq '{flightNumber:.flightNumber, from:.from, to:.to, date:.date, price:.price, seats:.seats, available:.AvailableSeats}'
 done
+
+# =============================================================================
+# 7. Book the past flight as Jane
+# =============================================================================
+section "7 · Book past flight NG001 as Jane"
+
+PAST_FLIGHT_ID=$(
+  curl -s "$BASE/flights/search?from=New+York&to=Paris" \
+  | jq -r '.flights[0]._id // empty'
+)
+
+if [[ -z "$PAST_FLIGHT_ID" ]]; then
+  warn "Could not find NG001 flight ID – skipping booking."
+else
+  info "Booking flight ID: $PAST_FLIGHT_ID"
+  curl -s -X POST "$BASE/bookings" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $JANE_TOKEN" \
+    -d "{\"flightId\":\"$PAST_FLIGHT_ID\",\"quantity\":1}" \
+    | jq .
+fi
 
 section "Done – seed complete"
